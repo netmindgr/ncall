@@ -1,0 +1,11 @@
+{
+  "name": "ncall",
+  "version-string": "0.2.2",
+  "builtin-baseline": "e456309491fd875487bf02b8a0dca76c1b1b00cc",
+  "dependencies": [
+    "openssl",
+    "opus",
+    "bcg729",
+    "sqlitecpp"
+  ]
+}

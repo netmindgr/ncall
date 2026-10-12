@@ -1,0 +1,45 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    # Pinned image: v143 toolset and Windows SDK 10.0.26100 must stay available.
+    runs-on: windows-2022
+    timeout-minutes: 120
+    env:
+      VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}\.vcpkg-cache,readwrite
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache vcpkg binaries
+        uses: actions/cache@v4
+        with:
+          path: .vcpkg-cache
+          key: vcpkg-x86-windows-static-${{ hashFiles('vcpkg.json') }}
+
+      - name: Prepare dependencies
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force .vcpkg-cache | Out-Null
+          ./scripts/prepare-dependencies.ps1
+
+      - name: Build
+        shell: pwsh
+        run: ./build.ps1
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ncall-win32-release
+          path: |
+            build/Win32/Release/ncall.exe
+            build/Win32/Release/netmind.ui.dll
+            build/Win32/Release/fonts
+            build/Win32/Release/*.wav
+            build/Win32/Release/ringtones
+            build/Win32/Release/langpack_greek.txt

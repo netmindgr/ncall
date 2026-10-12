@@ -1,0 +1,19 @@
+nCall by netmind
+Based on MicroSIP 3.22.16, https://www.microsip.org/source
+Original copyright notices are retained in source files.
+netmind UI, branding, build and installer modifications: 2026.
+The combined program is distributed under GPL-3.0-or-later.
+Original application/PJSIP allow GPL v2 or later; GPLv3 is selected for
+this build with Apache-2.0 OpenSSL 3 and GPLv3 bcg729.
+COPYING retains the original GPLv2 text; see COPYING-GPL-3.
+Dependency notices are in licenses.
+
+Corresponding source for every released version, including PJSIP,
+managed UI, fonts, dependency sources, vcpkg recipes, build
+instructions and installer source, is published as
+ncall-<version>-source.zip on the GitHub release of that version:
+https://github.com/netmindgr/ncall/releases
+Ο πηγαίος κώδικας κάθε έκδοσης: https://github.com/netmindgr/ncall/releases
+No server or account credentials are preset. Video is disabled.
+This build and its installer have no netmind digital signature.
+Contact: netmind, https://www.netmind.gr/, info@netmind.gr, 2331200260

@@ -1,0 +1,944 @@
+﻿Language Pack
+Language: Greek
+Locale: 0408
+Authors: netmind
+Author-email: info@netmind.gr
+
+[Menu]
+Μενού
+
+[Dialer]
+Κλήση
+
+[Contacts]
+Επαφές
+
+[Calls]
+Κλήσεις
+
+[Call]
+Κλήση
+
+[Video Call]
+Βιντεοκλήση
+
+[Message]
+Μήνυμα
+
+[Messages]
+Μηνύματα
+
+[End]
+Τερματισμός
+
+[Hold]
+Αναμονή
+
+[Resume]
+Συνέχεια
+
+[Call Transfer]
+Μεταφορά κλήσης
+
+[Blind Transfer]
+Άμεση μεταφορά
+
+[Attended Transfer]
+Μεταφορά με αναμονή
+
+[Add]
+Προσθήκη
+
+[Edit]
+Επεξεργασία
+
+[Copy]
+Αντιγραφή
+
+[Delete]
+Διαγραφή
+
+[Save]
+Αποθήκευση
+
+[Cancel]
+Ακύρωση
+
+[Close]
+Κλείσιμο
+
+[OK]
+Εντάξει
+
+[Yes]
+Ναι
+
+[No]
+Όχι
+
+[Name]
+Όνομα
+
+[Number]
+Αριθμός
+
+[Phone]
+Τηλέφωνο
+
+[Mobile]
+Κινητό
+
+[Email]
+Email
+
+[Address]
+Διεύθυνση
+
+[Info]
+Πληροφορίες
+
+[Comment]
+Σχόλιο
+
+[Account]
+Λογαριασμός
+
+[Add Account]
+Προσθήκη λογαριασμού
+
+[Edit Account]
+Επεξεργασία λογαριασμού
+
+[Account Name]
+Όνομα λογαριασμού
+
+[SIP Server]
+SIP server
+
+[SIP Proxy]
+SIP proxy
+
+[Username]
+Όνομα χρήστη
+
+[Domain]
+Domain
+
+[Login]
+Όνομα σύνδεσης
+
+[Password]
+Κωδικός
+
+[Display Name]
+Εμφανιζόμενο όνομα
+
+[Remember Password]
+Αποθήκευση κωδικού
+
+[Settings]
+Ρυθμίσεις
+
+[Shortcuts]
+Συντομεύσεις
+
+[Always on Top]
+Πάντα στο προσκήνιο
+
+[View Log File]
+Αρχείο καταγραφής
+
+[Visit Website]
+Ιστότοπος netmind
+
+[Help]
+Υποστήριξη
+
+[Exit]
+Έξοδος
+
+[About nCall]
+Σχετικά με το nCall
+
+[Based on MicroSIP. This build is distributed under GNU GPL v3.]
+Βασίζεται στο MicroSIP. Η έκδοση διατίθεται με άδεια GNU GPL v3.
+
+[Updates are not configured. Contact netmind support.]
+Οι ενημερώσεις δεν έχουν ακόμη ρυθμιστεί. Επικοινωνήστε με τη netmind.
+
+[Connected]
+Συνδεδεμένο
+
+[Connecting]
+Γίνεται σύνδεση
+
+[Disconnected]
+Αποσυνδεδεμένο
+
+[Online]
+Διαθέσιμος
+
+[Offline]
+Εκτός σύνδεσης
+
+[Busy]
+Απασχολημένος
+
+[Away]
+Απουσία
+
+[Calling]
+Γίνεται κλήση…
+
+[Incoming Call]
+Εισερχόμενη κλήση
+
+[Answer]
+Απάντηση
+
+[Reject]
+Απόρριψη
+
+[Decline]
+Απόρριψη
+
+[Hangup]
+Τερματισμός
+
+[Call Ended]
+Η κλήση τερματίστηκε
+
+[Missed Call]
+Αναπάντητη κλήση
+
+[Missed Calls]
+Αναπάντητες κλήσεις
+
+[Mute Microphone]
+Σίγαση μικροφώνου
+
+[Mute Speaker]
+Σίγαση ηχείου
+
+[Microphone]
+Μικρόφωνο
+
+[Speaker]
+Ηχείο
+
+[Microphone Level]
+Ένταση μικροφώνου
+
+[Speaker Level]
+Ένταση ηχείου
+
+[Voicemail Number]
+Αριθμός τηλεφωνητή
+
+[Auto Answer]
+Αυτόματη απάντηση
+
+[Do Not Disturb]
+Μην ενοχλείτε
+
+[Call Forwarding]
+Προώθηση κλήσεων
+
+[Call Pickup]
+Ανάληψη κλήσης
+
+[Redial]
+Επανάκληση
+
+[Clear]
+Καθαρισμός
+
+[Send]
+Αποστολή
+
+[Last Call]
+Τελευταία κλήση
+
+[Close All]
+Κλείσιμο όλων
+
+[Select All]
+Επιλογή όλων
+
+[Invite to Conference]
+Πρόσκληση σε συνδιάσκεψη
+
+[Merge]
+Συνένωση
+
+[Merge All]
+Συνένωση όλων
+
+[Separate]
+Διαχωρισμός
+
+[Separate All]
+Διαχωρισμός όλων
+
+[Disconnect]
+Αποσύνδεση
+
+[Import]
+Εισαγωγή
+
+[Export]
+Εξαγωγή
+
+[Search]
+Αναζήτηση
+
+[Refresh]
+Ανανέωση
+
+[Date]
+Ημερομηνία
+
+[Time]
+Ώρα
+
+[Duration]
+Διάρκεια
+
+[Type]
+Τύπος
+
+[Daily]
+Καθημερινά
+
+[Weekly]
+Εβδομαδιαία
+
+[Monthly]
+Μηνιαία
+
+[Quarterly]
+Τριμηνιαία
+
+[Never]
+Ποτέ
+
+[Check for Updates]
+Έλεγχος ενημερώσεων
+
+[Update Available]
+Διαθέσιμη ενημέρωση
+
+[No new version found]
+Δεν βρέθηκε νεότερη έκδοση.
+
+[Do you want to update now?]
+Θέλετε να ενημερώσετε τώρα;
+
+[Run at System Startup]
+Εκκίνηση με τα Windows
+
+[Default]
+Προεπιλογή
+
+[Enable Local Account]
+Τοπικός λογαριασμός
+
+[Disable Messaging]
+Απενεργοποίηση μηνυμάτων
+
+[Disable Video]
+Απενεργοποίηση βίντεο
+
+[Recording]
+Ηχογράφηση
+
+[Call Recording]
+Ηχογράφηση κλήσης
+
+[Audio Codecs]
+Κωδικοποιητές ήχου
+
+[Ringtone]
+Ήχος κλήσης
+
+[Auto]
+Αυτόματα
+
+[Logs]
+Αρχεία καταγραφής
+
+[Phone number]
+Αριθμός τηλεφώνου
+
+[Not configured]
+Χωρίς λογαριασμό
+
+[Ring Device]
+Συσκευή ήχου κλήσης
+
+[Ringtone Volume]
+Ένταση ήχου κλήσης
+
+[display password]
+Εμφάνιση κωδικού
+
+[Available Codecs]
+Διαθέσιμοι κωδικοποιητές
+
+[Enabled Codecs]
+Ενεργοί κωδικοποιητές
+
+[Dialing Prefix]
+Πρόθεμα κλήσης
+
+[Dial Plan]
+Κανόνες κλήσης
+
+[Hide Caller ID]
+Απόκρυψη αριθμού (Caller ID)
+
+[Media Encryption]
+Κρυπτογράφηση ήχου
+
+[Transport]
+Πρωτόκολλο μεταφοράς
+
+[Public Address]
+Δημόσια διεύθυνση
+
+[Register Refresh]
+Ανανέωση εγγραφής
+
+[Call Waiting]
+Αναμονή κλήσης
+
+[Microphone Amplification]
+Ενίσχυση μικροφώνου
+
+[Software Level Adjustment]
+Ρύθμιση έντασης από την εφαρμογή
+
+[Force Codec for Incoming]
+Κωδικοποιητής για εισερχόμενες κλήσεις
+
+[Source Port]
+Θύρα SIP
+
+[RTP Ports]
+Θύρες ήχου RTP
+
+[Nameserver]
+DNS server
+
+[Single Call Mode]
+Λειτουργία μίας κλήσης
+
+[Handle Media Buttons]
+Κουμπιά ακουστικών
+
+[Headset Support]
+Υποστήριξη ακουστικών
+
+[Sound Events]
+Ήχοι εφαρμογής
+
+[Enable Log File]
+Αρχείο καταγραφής
+
+[Bring to Front on Incoming Call]
+Εμφάνιση σε εισερχόμενη κλήση
+
+[Random Popup Position]
+Τυχαία θέση παραθύρου κλήσης
+
+[Multi Monitor Support]
+Πολλαπλές οθόνες
+
+[Handle IP changes]
+Παρακολούθηση αλλαγών δικτύου
+
+[Disable name lookup in directory]
+Απενεργοποίηση αναζήτησης ονόματος
+
+[Directory of Users]
+Κατάλογος χρηστών
+
+[Default List Action]
+Προεπιλεγμένη ενέργεια λίστας
+
+[Deny Incoming]
+Απόρριψη εισερχόμενων
+
+[Feature Codes]
+Κωδικοί λειτουργιών
+
+[Publish Presence]
+Δημοσίευση διαθεσιμότητας
+
+[Allow IP Rewrite]
+Ενημέρωση διεύθυνσης IP
+
+[Disable Session Timers]
+Απενεργοποίηση χρονιστών συνεδρίας
+
+[A contact with this phone number already exists. Do you want to replace it?]
+Υπάρχει ήδη επαφή με αυτόν τον αριθμό. Θέλετε να την αντικαταστήσετε;
+
+[A critical error occurred in the audio subsystem]
+Παρουσιάστηκε σφάλμα στο σύστημα ήχου.
+
+[A critical error occurred in the module on your PC]
+Παρουσιάστηκε σφάλμα στην εφαρμογή.
+
+[A critical error occurred in the video subsystem]
+Παρουσιάστηκε σφάλμα στο σύστημα βίντεο.
+
+[A newer version may be available]
+Ίσως είναι διαθέσιμη νεότερη έκδοση.
+
+[AA]
+Αυτόμ. απάντηση
+
+[AC]
+Αυτόμ. συνδιάσκεψη
+
+[Accounts]
+Λογαριασμοί
+
+[Active Calls]
+Ενεργές κλήσεις
+
+[Add Account...]
+Προσθήκη λογαριασμού…
+
+[Add Contact]
+Προσθήκη επαφής
+
+[All Calls]
+Όλες οι κλήσεις
+
+[Answer with Video]
+Απάντηση με βίντεο
+
+[Are you sure you want to delete the selected items?]
+Θέλετε να διαγράψετε τα επιλεγμένα στοιχεία;
+
+[Are you sure you want to delete?]
+Θέλετε να γίνει διαγραφή;
+
+[Ask your SIP provider how to configure the account correctly.]
+Ζητήστε από τον πάροχο SIP τα σωστά στοιχεία σύνδεσης.
+
+[Attended transfer is not available in single-call mode. Disable this mode or use PBX feature codes.]
+Η μεταφορά με αναμονή δεν είναι διαθέσιμη στη λειτουργία μίας κλήσης. Απενεργοποιήστε τη λειτουργία ή χρησιμοποιήστε τους κωδικούς του τηλεφωνικού κέντρου.
+
+[Auto Conference]
+Αυτόματη συνδιάσκεψη
+
+[Backspace]
+Διαγραφή ψηφίου
+
+[Bottom Position]
+Κάτω θέση
+
+[CONF]
+Συνδιάσκεψη
+
+[Call failed:]
+Η κλήση απέτυχε:
+
+[Call transfered successfully, disconnecting call]
+Η κλήση μεταφέρθηκε. Γίνεται αποσύνδεση.
+
+[Caller Number]
+Αριθμός καλούντος
+
+[Camera]
+Κάμερα
+
+[City]
+Πόλη
+
+[Conference]
+Συνδιάσκεψη
+
+[Connection Failed]
+Η σύνδεση απέτυχε
+
+[Contact]
+Επαφή
+
+[Contact already exists]
+Η επαφή υπάρχει ήδη
+
+[Control Button]
+Κουμπί ελέγχου
+
+[DND]
+Μην ενοχλείτε
+
+[DTMF Method]
+Τρόπος αποστολής DTMF
+
+[Delay]
+Καθυστέρηση
+
+[Delete Account]
+Διαγραφή λογαριασμού
+
+[Delete Call Log]
+Διαγραφή ιστορικού
+
+[Delete Contact]
+Διαγραφή επαφής
+
+[Different Domain]
+Διαφορετικό domain
+
+[Different Remote Domain]
+Διαφορετικό απομακρυσμένο domain
+
+[Different User]
+Διαφορετικός χρήστης
+
+[Different User or Domain]
+Διαφορετικός χρήστης ή domain
+
+[Disabled]
+Απενεργοποιημένο
+
+[Diversion]
+Εκτροπή κλήσης
+
+[Do you want to delete user data and program settings? This action cannot be undone.]
+Θέλετε να διαγράψετε τα δεδομένα και τις ρυθμίσεις; Η διαγραφή δεν μπορεί να αναιρεθεί.
+
+[E-mail Address]
+Email
+
+[EC]
+Ακύρωση ηχούς
+
+[Edit Local Account]
+Επεξεργασία τοπικού λογαριασμού
+
+[Enable]
+Ενεργοποίηση
+
+[Export Call Log]
+Εξαγωγή ιστορικού
+
+[Export Configuration]
+Εξαγωγή ρυθμίσεων
+
+[Export Contacts]
+Εξαγωγή επαφών
+
+[Export/Import]
+Εξαγωγή / Εισαγωγή
+
+[FWD]
+Προώθηση
+
+[Final]
+Τελικό
+
+[First Name]
+Μικρό όνομα
+
+[Idle]
+Διαθέσιμος
+
+[Import Call Log]
+Εισαγωγή ιστορικού
+
+[Import Configuration]
+Εισαγωγή ρυθμίσεων
+
+[Import Contacts]
+Εισαγωγή επαφών
+
+[In-band]
+Μέσα στον ήχο
+
+[Incorrect Password]
+Λανθασμένος κωδικός
+
+[Information]
+Πληροφορίες
+
+[Keep-Alive]
+Διατήρηση σύνδεσης
+
+[Label]
+Ετικέτα
+
+[Last Name]
+Επώνυμο
+
+[Make Active]
+Ενεργοποίηση
+
+[Mandatory]
+Υποχρεωτικό
+
+[Microphone access is blocked. Please check your antivirus settings or security software.]
+Η πρόσβαση στο μικρόφωνο έχει αποκλειστεί. Ελέγξτε το antivirus ή το πρόγραμμα ασφάλειας.
+
+[Microphone access is turned off. Enable it in Windows Settings.]
+Η πρόσβαση στο μικρόφωνο είναι απενεργοποιημένη. Ενεργοποιήστε τη στις ρυθμίσεις των Windows.
+
+[Microphone and speakers are required.]
+Χρειάζονται μικρόφωνο και ηχεία.
+
+[Mobile Number]
+Κινητό τηλέφωνο
+
+[Mobile:]
+Κινητό:
+
+[Network connection is not available.]
+Δεν υπάρχει σύνδεση δικτύου.
+
+[No microphone or audio output device was detected. Please connect them to make calls.]
+Δεν βρέθηκε μικρόφωνο ή συσκευή ήχου. Συνδέστε τα για να πραγματοποιήσετε κλήσεις.
+
+[Open the download page now?]
+Να ανοίξει η σελίδα λήψης;
+
+[Open troubleshooting page?]
+Να ανοίξει η σελίδα υποστήριξης;
+
+[Optional]
+Προαιρετικό
+
+[Options]
+Επιλογές
+
+[Opus 2ch]
+Opus με δύο κανάλια
+
+[Phone Number]
+Σταθερό τηλέφωνο
+
+[Phone:]
+Τηλέφωνο:
+
+[Please check that your firewall or antivirus is not blocking this application.]
+Ελέγξτε ότι το τείχος προστασίας ή το antivirus δεν αποκλείει την εφαρμογή.
+
+[Please fill out at least the required fields marked with *.]
+Συμπληρώστε τα υποχρεωτικά πεδία που έχουν αστερίσκο (*).
+
+[Please visit our website to check for updates.]
+Επισκεφθείτε τη σελίδα της netmind για ενημερώσεις.
+
+[Please visit our website to download the latest version.]
+Επισκεφθείτε τη σελίδα της netmind για τη νεότερη έκδοση.
+
+[Postal Code]
+Ταχυδρομικός κώδικας
+
+[Presence Subscription]
+Ενημέρωση διαθεσιμότητας
+
+[REC]
+Ηχογράφηση
+
+[See the Freezes or Crashes help section.]
+Επισκεφθείτε τη σελίδα υποστήριξης της netmind.
+
+[Selected Accounts]
+Επιλεγμένοι λογαριασμοί
+
+[Server error]
+Σφάλμα διακομιστή
+
+[Starred]
+Αγαπημένη
+
+[State]
+Περιοχή
+
+[Symmetric NAT detected!]
+Εντοπίστηκε συμμετρικό NAT.
+
+[The application crashed]
+Η εφαρμογή τερματίστηκε απρόσμενα.
+
+[The application may have been launched from an unsafe location. Please download the application from the official website.]
+Η θέση εκτέλεσης της εφαρμογής δεν αναγνωρίζεται. Επικοινωνήστε με τη netmind.
+
+[The received data cannot be recognized]
+Τα δεδομένα που ελήφθησαν δεν αναγνωρίζονται.
+
+[The server returned an error code:]
+Ο διακομιστής επέστρεψε σφάλμα:
+
+[This application requires camera access for desktop apps to function properly.]
+Χρειάζεται πρόσβαση στην κάμερα για εφαρμογές υπολογιστή.
+
+[This could be caused by driver issues, or other unexpected system problems.]
+Η αιτία μπορεί να είναι το πρόγραμμα οδήγησης ή άλλο πρόβλημα του συστήματος.
+
+[This version is no longer supported]
+Η έκδοση αυτή δεν υποστηρίζεται πλέον.
+
+[This version is outdated]
+Η έκδοση αυτή είναι παλιά.
+
+[To]
+Προς
+
+[Toggle]
+Εναλλαγή
+
+[Transfer]
+Μεταφορά
+
+[Transfer Call to]
+Μεταφορά κλήσης προς
+
+[Try the Lite version or update your graphics and camera drivers.]
+Ενημερώστε τα προγράμματα οδήγησης γραφικών και κάμερας.
+
+[Update now to stay secure and take advantage of the latest improvements.]
+Ενημερώστε την εφαρμογή για τις νεότερες βελτιώσεις.
+
+[Updating to the latest version may resolve this issue.]
+Η ενημέρωση της εφαρμογής μπορεί να λύσει το πρόβλημα.
+
+[Use Delele key to disable selected codec]
+Πατήστε Delete για να απενεργοποιήσετε τον κωδικοποιητή.
+
+[Use Delele key to remove account]
+Πατήστε Delete για να αφαιρέσετε τον λογαριασμό.
+
+[Use Space key to add account]
+Πατήστε Space για να προσθέσετε τον λογαριασμό.
+
+[Use Space key to enable selected codec]
+Πατήστε Space για να ενεργοποιήσετε τον κωδικοποιητή.
+
+[VAD]
+Ανίχνευση ομιλίας
+
+[Video Bitrate]
+Ρυθμός δεδομένων βίντεο
+
+[Video Codec]
+Κωδικοποιητής βίντεο
+
+[You already have an active call with this number.]
+Υπάρχει ήδη ενεργή κλήση με αυτόν τον αριθμό.
+
+[close window to ignore call]
+Κλείστε το παράθυρο για να αγνοήσετε την κλήση.
+
+[sec]
+δευτ.
+
+[unencrypted]
+Χωρίς κρυπτογράφηση
+
+[Soft]
+Ήπια
+
+[Hard]
+Πλήρης
+
+[Support]
+Υποστήριξη
+
+[Outgoing]
+Εξερχόμενη
+
+[Incoming]
+Εισερχόμενη
+
+[Missed]
+Αναπάντητη
+
+[Not Found]
+Δεν βρέθηκε
+
+[Forbidden]
+Η πρόσβαση απορρίφθηκε
+
+[Unauthorized]
+Απαιτείται σύνδεση
+
+[Request Timeout]
+Λήξη χρόνου αναμονής
+
+[Busy Here]
+Κατειλημμένο
+
+[Failed to create settings window on your system]
+Δεν ήταν δυνατό να ανοίξουν οι ρυθμίσεις.
+
+[Failed to create account window on your system]
+Δεν ήταν δυνατό να ανοίξει ο λογαριασμός.
+
+[Failed to create shortcuts window]
+Δεν ήταν δυνατό να ανοίξουν οι συντομεύσεις.
+
+[SIP Header]
+Κεφαλίδα SIP
+
+[STUN Server]
+Διακομιστής STUN
+
+[A Lite version without video support is also available.]
+Η έκδοση της netmind υποστηρίζει φωνητικές κλήσεις.
+
+[Call/Blind Transfer]
+Κλήση / Άμεση μεταφορά
+
+[Call/Attended Transfer]
+Κλήση / Μεταφορά με αναμονή
+
+[Call/Conference]
+Κλήση / Συνδιάσκεψη
+
+[Verify TLS Server Certificate]
+Έλεγχος πιστοποιητικού TLS του server
+
+[Accept Calls Only from Server]
+Κλήσεις μόνο από τον server
+
+[This will disconnect you from the PBX server. You will no longer be able to make or receive calls. Are you sure?]
+Θα αποσυνδεθείτε από το τηλεφωνικό κέντρο και δεν θα μπορείτε να κάνετε ή να δέχεστε κλήσεις. Συνέχεια;
+
+[You will no longer be able to make outgoing calls using this account. Are you sure?]
+Δεν θα μπορείτε πλέον να κάνετε κλήσεις με αυτόν τον λογαριασμό. Συνέχεια;
+
+[Camera access is turned off.]
+Η πρόσβαση στην κάμερα είναι απενεργοποιημένη.
+
+[Local Video]
+Τοπικό βίντεο
+
+[Ringing]
+Κουδουνίζει
+
+[Session Progress]
+Σε εξέλιξη
+
+[Service Unavailable]
+Η υπηρεσία δεν είναι διαθέσιμη
+
+[Server Internal Error]
+Εσωτερικό σφάλμα διακομιστή
+
+[Temporarily Unavailable]
+Προσωρινά μη διαθέσιμο
+
+[Forward Call]
+Προώθηση κλήσης
+
+[SIP Provider]
+Πάροχος
+
+[Other provider (manual setup)]
+Άλλος πάροχος (χειροκίνητη ρύθμιση)

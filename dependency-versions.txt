@@ -1,0 +1,14 @@
+MicroSIP 3.22.16 public source, GPL-2.0-or-later
+PJSIP 2.17, GPL-2.0-or-later (nCall patches: pjmedia-audiodev/wmme_dev.c device names as UTF-8; pjsua-lib/pjsua_call.c no T.140 text stream by default; pjsip/sip_transport_tls.c application decides on certificate name mismatch)
+OpenSSL 3.5.9 LTS (vcpkg overlay port in vcpkg-ports), Apache-2.0
+Opus 1.6.1, BSD-3-Clause
+bcg729 1.1.2, GPL-3.0-or-later
+SQLiteCpp 3.3.3, MIT
+SQLite3 3.53.4#2, public domain
+Open Sans, SIL OFL 1.1, merged Greek and Latin font subsets
+Comfortaa, SIL OFL 1.1, unmodified bundled TTF
+.NET Framework 4.8 / WPF, Windows system component
+vcpkg e456309491fd875487bf02b8a0dca76c1b1b00cc
+MSVC 14.44.35207, v143, Release x86, static native dependencies
+Windows SDK 10.0.26100.0
+Inno Setup 6.7.3
