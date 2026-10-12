@@ -163,6 +163,11 @@ static std::string NetmindWindowsRootsPem()
             std::string block(size, 0);
             if (CryptBinaryToStringA(cert->pbCertEncoded, cert->cbCertEncoded, CRYPT_STRING_BASE64HEADER, &block[0], &size)) {
                 block.resize(size);
+                // The written size excludes the terminator, but never let a NUL into the bundle:
+                // PJSIP takes its length with strlen and would stop at the first one.
+                while (!block.empty() && block.back() == '\0') {
+                    block.pop_back();
+                }
                 pem += block;
             }
         }
@@ -4213,8 +4218,13 @@ void CmainDlg::PJAccountDelete(bool deep, bool exit, CStringA code)
 {
     Unsubscribe();
     if (pjsua_acc_is_valid(account)) {
+        pjsua_acc_id deleted = account;
         pjsua_acc_del(account);
         account = PJSUA_INVALID_ID;
+        // PJSIP may reuse the id for the next account: forget this registrar's addresses. Done after
+        // pjsua_acc_del, so a registration callback still in flight cannot add them back.
+        CSingleLock lock(&serverAddressesLock, TRUE);
+        serverAddresses.erase(deleted);
     }
 
 }

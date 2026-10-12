@@ -1,6 +1,6 @@
 ; nCall per-user installer. GPL-3.0-or-later.
 #ifndef AppVersion
-  #define AppVersion "0.2.2"
+  #define AppVersion "0.2.3"
 #endif
 #define AppExeName "ncall.exe"
 #ifdef LifecycleTest

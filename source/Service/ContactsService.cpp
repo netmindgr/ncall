@@ -25,6 +25,7 @@
 
 #include <fstream>
 #include <string>
+#include <vector>
 #include <iostream>
 
 ContactsService::ContactsService(std::unique_ptr<IContactsRepository> repository)
@@ -202,14 +203,15 @@ static CString ImportedNumber(CString value)
 }
 
 // Google Contacts keeps several values of one field in a single cell: "a ::: b".
-static void SplitImportedValues(const CString& cell, CStringArray& values)
+// keepEmpty keeps blank positions, so a parallel list of labels stays aligned with its values.
+static void SplitImportedValues(const CString& cell, CStringArray& values, bool keepEmpty = false)
 {
     int start = 0;
     while (start <= cell.GetLength()) {
         int end = cell.Find(_T(":::"), start);
         CString part = end == -1 ? cell.Mid(start) : cell.Mid(start, end - start);
         part.Trim();
-        if (!part.IsEmpty()) {
+        if (keepEmpty || !part.IsEmpty()) {
             values.Add(part);
         }
         if (end == -1) {
@@ -411,33 +413,56 @@ CString ContactsService::ImportContactsCSV(CString filename, CArray<ContactWithF
                         SplitImportedValues(*value, values);
                         *value = values.IsEmpty() ? CString() : ImportedNumber(values[0]);
                     }
+                    // Numbers of the "Phone N" columns with their kind; assigned to the slots after all are read.
+                    CStringArray found;
+                    std::vector<bool> foundMobile;
                     for (int k = 0; k < phoneValueIndexes.GetCount(); k++) {
                         int valueIndex = phoneValueIndexes[k];
                         int labelIndex = phoneLabelIndexes[k];
                         if (arr.GetCount() <= valueIndex) {
                             continue;
                         }
-                        CString label = labelIndex != -1 && arr.GetCount() > labelIndex ? arr.GetAt(labelIndex) : CString();
-                        label.MakeLower();
-                        bool isMobile = label.Find(_T("mobile")) != -1 || label.Find(_T("cell")) != -1 || label.Find(_T("\u03ba\u03b9\u03bd\u03b7\u03c4")) != -1;
+                        // Labels come as a parallel list ("Home ::: Mobile" for "111 ::: 222"): each number gets its own.
+                        CStringArray labels;
+                        if (labelIndex != -1 && arr.GetCount() > labelIndex) {
+                            SplitImportedValues(arr.GetAt(labelIndex), labels, true);
+                        }
                         CStringArray values;
-                        SplitImportedValues(arr.GetAt(valueIndex), values);
+                        SplitImportedValues(arr.GetAt(valueIndex), values, true);
                         for (int v = 0; v < values.GetCount(); v++) {
+                            CString label = v < labels.GetCount() ? labels[v] : labels.GetCount() == 1 ? labels[0] : CString();
+                            label.MakeLower();
+                            bool isMobile = label.Find(_T("mobile")) != -1 || label.Find(_T("cell")) != -1 || label.Find(_T("\u03ba\u03b9\u03bd\u03b7\u03c4")) != -1;
                             CString number = ImportedNumber(values[v]);
-                            if (number.IsEmpty() || number == contact.phone || number == contact.mobile) {
+                            bool duplicate = number == contact.phone || number == contact.mobile;
+                            for (int f = 0; f < found.GetCount() && !duplicate; f++) {
+                                duplicate = found[f] == number;
+                            }
+                            if (number.IsEmpty() || duplicate) {
                                 continue;
                             }
                             // The first number in the file (Google lists the primary one first) is the one dialled.
                             if (contact.number.IsEmpty() && numberIndex == -1) {
                                 contact.number = number;
                             }
-                            CString* slot = isMobile ? &contact.mobile : &contact.phone;
-                            if (!slot->IsEmpty()) {
-                                slot = contact.phone.IsEmpty() ? &contact.phone : contact.mobile.IsEmpty() ? &contact.mobile : NULL;
-                            }
-                            if (slot) {
-                                *slot = number;
-                            }
+                            found.Add(number);
+                            foundMobile.push_back(isMobile);
+                        }
+                    }
+                    // First each slot takes the first number labelled for it, then the rest fill what is still empty,
+                    // so an extra landline listed earlier cannot take the place of a number labelled mobile.
+                    std::vector<bool> placed(found.GetCount(), false);
+                    for (int f = 0; f < found.GetCount(); f++) {
+                        CString* slot = foundMobile[f] ? &contact.mobile : &contact.phone;
+                        if (slot->IsEmpty()) {
+                            *slot = found[f];
+                            placed[f] = true;
+                        }
+                    }
+                    for (int f = 0; f < found.GetCount(); f++) {
+                        CString* slot = placed[f] ? NULL : contact.phone.IsEmpty() ? &contact.phone : contact.mobile.IsEmpty() ? &contact.mobile : NULL;
+                        if (slot) {
+                            *slot = found[f];
                         }
                     }
                     if (!phoneValueIndexes.IsEmpty()) {

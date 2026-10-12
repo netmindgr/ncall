@@ -230,6 +230,8 @@ internal sealed class Yuboto : ISmsProvider {
     }
     public List<SmsSent> Send(SmsSettings s,IList<string> phones,string text){
         bool unicode=SmsText.NeedsUnicode(text,true);int parts=SmsText.Parts(text,true);
+        // "dlr" asks Yuboto to push reports to a callback URL (we have none, and the API wants one when it is true);
+        // the status is read separately through the Dlr method. To confirm with a live key.
         var json=new StringBuilder("{\"dlr\":false,\"contacts\":[");
         for(int i=0;i<phones.Count;i++){if(i>0)json.Append(',');json.Append("{\"phonenumber\":").Append(SmsHttp.Json(phones[i])).Append('}');}
         json.Append("],\"sms\":{\"sender\":").Append(SmsHttp.Json(s.Sender)).Append(",\"text\":").Append(SmsHttp.Json(text))

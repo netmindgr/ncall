@@ -17,8 +17,8 @@
  */
 
 #pragma once
-#define _GLOBAL_VERSION "0.2.2"
-#define _GLOBAL_VERSION_COMMA 0,2,2,0
+#define _GLOBAL_VERSION "0.2.3"
+#define _GLOBAL_VERSION_COMMA 0,2,3,0
 #define _GLOBAL_TIMESTAMP 1789417397
 #define _GLOBAL_KEY "*********"
 // Voice build; video disabled.
