@@ -256,6 +256,10 @@ public:
     afx_msg LRESULT onCommandLine(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnAccount(WPARAM wParam, LPARAM lParam);
     afx_msg void OnMenuAccountAdd();
+    afx_msg void OnMenuAccountAddFile();
+    afx_msg void OnMenuAccountExportFile();
+    afx_msg LRESULT onProvisionFile(WPARAM wParam, LPARAM lParam);
+    void ProvisionFromFile(CString file);
     afx_msg void OnMenuAccountEdit(UINT nID);
     afx_msg void OnMenuAccountChange(UINT nID);
     afx_msg void OnMenuAccountLocalEdit();
@@ -277,6 +281,8 @@ public:
     afx_msg void OnMenuWebsite();
     afx_msg void OnMenuHelp();
     afx_msg void OnMenuAbout();
+    afx_msg void OnMenuSupport();
+    CString SupportDiagnostics();
     afx_msg void OnNmAccount();
     afx_msg void OnPaint();
     afx_msg void OnMenuAddl();

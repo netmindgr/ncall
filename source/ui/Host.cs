@@ -96,6 +96,11 @@ internal static class Native {
         var text=Marshal.AllocHGlobal(2048);var item=new LVITEM{item=row,subItem=col,text=text,textLength=1024};
         var p=Marshal.AllocHGlobal(Marshal.SizeOf(item));try{Marshal.StructureToPtr(item,p,false);SendMessage(h,0x1073,new IntPtr(row),p);return Marshal.PtrToStringUni(text)??"";}finally{Marshal.FreeHGlobal(p);Marshal.FreeHGlobal(text);}
     }
+    // Image index of a row (in the call list it is the call type; 2 = missed, Calls.cpp / Call.h).
+    internal static int ListImage(IntPtr h,int row) {
+        var item=new LVITEM{mask=2,item=row};var p=Marshal.AllocHGlobal(Marshal.SizeOf(item));
+        try{Marshal.StructureToPtr(item,p,false);if(SendMessage(h,0x104b,IntPtr.Zero,p)==IntPtr.Zero)return -1;return ((LVITEM)Marshal.PtrToStructure(p,typeof(LVITEM))).image;}finally{Marshal.FreeHGlobal(p);}
+    }
     internal static void ListSelect(IntPtr h,int row) {
         var item=new LVITEM{state=0,stateMask=3};var p=Marshal.AllocHGlobal(Marshal.SizeOf(item));
         try{Marshal.StructureToPtr(item,p,false);SendMessage(h,0x102b,new IntPtr(-1),p);item.state=3;Marshal.StructureToPtr(item,p,false);SendMessage(h,0x102b,new IntPtr(row),p);}finally{Marshal.FreeHGlobal(p);}
@@ -185,6 +190,43 @@ public static class Host {
         var close=Surface.Button("Κλείσιμο",()=>w.Close());close.IsCancel=true;close.IsDefault=true;close.Margin=new Thickness(4,4,0,4);actions.Children.Add(close);
         panel.Children.Add(actions);w.ShowDialog();return 1;
     }catch(Exception e){Error(e);return -1;}}
+    // "Βοήθεια από netmind" (CmainDlg::OnMenuSupport): "hwnd|base64(UTF-8 diagnostics)".
+    // The diagnostics are built natively, without passwords, user names or numbers, and are shown
+    // in full before the customer copies them or puts them in an e-mail (never sent by nCall).
+    internal const string SupportPage="https://www.netmind.gr/support";
+    public static int Support(string arg){try{
+        var parts=arg.Split('|');var h=new IntPtr(long.Parse(parts[0]));
+        string diagnostics=parts.Length>1?Encoding.UTF8.GetString(Convert.FromBase64String(parts[1])):"";
+        var panel=new StackPanel{Margin=new Thickness(28)};
+        var title=Surface.ProductMark(24);title.Margin=new Thickness(0,0,0,10);panel.Children.Add(title);
+        panel.Children.Add(Surface.Label("Βοήθεια από netmind",18));
+        panel.Children.Add(Surface.Label("Καλέστε μας ή ανοίξτε τη σελίδα απομακρυσμένης βοήθειας. Με τα διαγνωστικά βλέπουμε αμέσως πώς είναι ρυθμισμένο το nCall.",13));
+        var w=Dialog("Βοήθεια από netmind",panel,h);
+        var status=Surface.Label("",12);status.SetResourceReference(TextBlock.ForegroundProperty,"Muted");
+        panel.Children.Add(Surface.Button("Κλήση στη netmind · 2331200260",()=>{w.Close();Dial("2331200260");},true));
+        panel.Children.Add(Surface.Button("Απομακρυσμένη βοήθεια",()=>{
+            try{System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(SupportPage){UseShellExecute=true});status.Text="Η σελίδα βοήθειας της netmind άνοιξε στον browser.";}
+            catch{status.Text="Ανοίξτε στον browser τη σελίδα "+SupportPage;}}));
+        var details=new TextBox{Text=diagnostics,IsReadOnly=true,TextWrapping=TextWrapping.Wrap,FontSize=11,MaxHeight=150,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,Margin=new Thickness(0,14,0,6)};
+        System.Windows.Automation.AutomationProperties.SetName(details,"Διαγνωστικά");
+        panel.Children.Add(Surface.Label("Διαγνωστικά (χωρίς κωδικούς, ονόματα χρήστη και αριθμούς):",12));
+        panel.Children.Add(details);
+        var actions=new UniformGrid{Columns=2};
+        var copy=Surface.Button("Αντιγραφή",()=>{
+            try{Clipboard.SetText(diagnostics);status.Text="Αντιγράφηκαν. Επικολλήστε τα σε email προς info@netmind.gr.";}
+            catch{status.Text="Δεν ήταν δυνατή η αντιγραφή. Επιλέξτε το κείμενο και πατήστε Ctrl+C.";}});
+        copy.Margin=new Thickness(0,4,4,4);actions.Children.Add(copy);
+        var mail=Surface.Button("Email στη netmind",()=>{
+            // Opens a draft in the default mail program; the customer decides whether to send it.
+            string url="mailto:info@netmind.gr?subject="+Uri.EscapeDataString("nCall: βοήθεια")+"&body="+Uri.EscapeDataString("Περιγράψτε το πρόβλημα:\r\n\r\n\r\n"+diagnostics);
+            try{System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url){UseShellExecute=true});status.Text="Άνοιξε νέο email στο πρόγραμμα αλληλογραφίας σας.";}
+            catch{status.Text="Δεν βρέθηκε πρόγραμμα email. Πατήστε «Αντιγραφή» και στείλτε τα στο info@netmind.gr.";}});
+        mail.Margin=new Thickness(4,4,0,4);actions.Children.Add(mail);
+        panel.Children.Add(actions);
+        panel.Children.Add(status);
+        var close=Surface.Button("Κλείσιμο",()=>w.Close());close.IsCancel=true;close.Margin=new Thickness(0,8,0,0);panel.Children.Add(close);
+        w.ShowDialog();return 1;
+    }catch(Exception e){Error(e);return -1;}}
     public static int Message(string arg){try{var parts=arg.Split('|');var h=new IntPtr(long.Parse(parts[0]));uint type=uint.Parse(parts[1]);string text=Encoding.UTF8.GetString(Convert.FromBase64String(parts[2]));int result=2;var panel=new StackPanel{Margin=new Thickness(24)};panel.Children.Add(Surface.Label(text,14));var actions=new WrapPanel{HorizontalAlignment=HorizontalAlignment.Right,Margin=new Thickness(0,20,0,0)};panel.Children.Add(actions);var w=Dialog("nCall",panel,h);int kind=(int)(type&15);var ids=kind==4?new[]{6,7}:kind==3?new[]{6,7,2}:kind==1?new[]{1,2}:kind==5?new[]{4,2}:kind==2?new[]{3,4,5}:new[]{1};foreach(int id in ids){int choice=id;string name=id==6?"Ναι":id==7?"Όχι":id==2?"Ακύρωση":id==3?"Διακοπή":id==4?"Επανάληψη":id==5?"Παράβλεψη":"Εντάξει";var b=Surface.Button(name,()=>{result=choice;w.Close();},id==ids[0]);b.Margin=new Thickness(5);b.IsDefault=(type&0x300)==((Array.IndexOf(ids,id))<<8);b.IsCancel=id==2;actions.Children.Add(b);}w.ShowDialog();return result;}catch(Exception e){Error(e);return -1;}}
     static Window Dialog(string title,FrameworkElement body,IntPtr owner){ApplyPalette();var layout=new DockPanel();var footer=Surface.BrandFooter();DockPanel.SetDock(footer,Dock.Bottom);layout.Children.Add(footer);layout.Children.Add(body);var w=new Window{Title=title,Content=layout,Width=460,SizeToContent=SizeToContent.Height,MaxHeight=740,WindowStartupLocation=owner==IntPtr.Zero?WindowStartupLocation.CenterScreen:WindowStartupLocation.CenterOwner,ResizeMode=ResizeMode.NoResize,FontFamily=Surface.BodyFont,FontSize=13};w.Resources.MergedDictionaries.Add(Theme);w.SetResourceReference(Window.BackgroundProperty,"Canvas");w.SetResourceReference(Window.ForegroundProperty,"Ink");if(Native.Own(owner))new WindowInteropHelper(w).Owner=owner;w.SourceInitialized+=(s,e)=>Caption(new WindowInteropHelper(w).Handle);return w;}
 }
@@ -258,6 +300,8 @@ public sealed class ListRow {
     public string Title{get;private set;}
     public string Detail{get;private set;}
     internal string[] Cells{get;private set;}
+    internal bool Missed{get;private set;}
+    internal ListRow(string[] cells,bool missed=false):this(cells){Missed=missed;if(missed){text+=" (αναπάντητη)";Detail=Detail==""?"Αναπάντητη":"Αναπάντητη  ·  "+Detail;}}
     internal ListRow(string[] cells){
         var parts=cells.Where(x=>!String.IsNullOrEmpty(x)).ToArray();Cells=parts;
         text=String.Join("  ·  ",parts);
@@ -270,6 +314,9 @@ public sealed class ListRow {
         var detail=new FrameworkElementFactory(typeof(TextBlock));
         detail.SetValue(DockPanel.DockProperty,Dock.Right);
         detail.SetValue(FrameworkElement.MarginProperty,new Thickness(12,0,0,0));
+        // A long detail (number@server, time) must not push the name out of the row.
+        detail.SetValue(FrameworkElement.MaxWidthProperty,170.0);
+        detail.SetValue(TextBlock.TextTrimmingProperty,TextTrimming.CharacterEllipsis);
         detail.SetResourceReference(TextBlock.ForegroundProperty,"Muted");
         detail.SetBinding(TextBlock.TextProperty,new System.Windows.Data.Binding("Detail"));
         var title=new FrameworkElementFactory(typeof(TextBlock));
@@ -365,6 +412,11 @@ internal sealed class Surface : IDisposable {
         };
         item("Επεξεργασία λογαριασμού",()=>{var c=Find(6004);if(c!=null)Native.Value(c.H,0xf5);});
         item("Νέος λογαριασμός…",()=>Native.Command(parent,32771));
+        // Account setup files (.ncall): ID_ACCOUNT_ADD_FILE / ID_ACCOUNT_EXPORT_FILE in resource.h.
+        item("Νέος λογαριασμός από αρχείο ρύθμισης…",()=>Native.Command(parent,32824));
+        var exportSetup=new MenuItem{Header="Εξαγωγή αρχείου ρύθμισης λογαριασμού…",ToolTip="Αρχείο για να ρυθμιστεί ο ίδιος λογαριασμός σε άλλον υπολογιστή, χωρίς τον κωδικό"};
+        exportSetup.Click+=(s,e)=>Native.Command(parent,32825);main.Items.Add(exportSetup);
+        main.Opened+=(s,e)=>exportSetup.IsEnabled=Host.ActiveAccount>0;
         main.Items.Add(new Separator());
         item("Νέο SMS…",()=>Sms.Compose(parent,"",""));
         item("Ιστορικό SMS…",()=>Sms.History(parent));
@@ -372,6 +424,7 @@ internal sealed class Surface : IDisposable {
         main.Items.Add(new Separator());
         item("Ρυθμίσεις",()=>Native.Command(parent,32789));
         item("Έλεγχος για ενημερώσεις",()=>Native.Command(parent,32813));
+        item("Βοήθεια από netmind…",()=>Native.Command(parent,32826));
         item("Σχετικά με το nCall",()=>Host.About(parent.ToInt64().ToString()));
         main.Items.Add(new Separator());
         item("Έξοδος",()=>Native.Command(parent,32784));
@@ -526,7 +579,7 @@ internal sealed class Surface : IDisposable {
             // Full re-read when the row count changes, otherwise about once a second.
             if(count!=lastCount||++ticks%6==0){
                 lastCount=count;
-                var items=new List<ListRow>();for(int row=0;row<count;row++)items.Add(new ListRow(Enumerable.Range(0,3).Select(col=>Native.ListCell(list.H,row,col)).ToArray()));
+                var items=new List<ListRow>();for(int row=0;row<count;row++)items.Add(new ListRow(Enumerable.Range(0,3).Select(col=>Native.ListCell(list.H,row,col)).ToArray(),!contacts&&Native.ListImage(list.H,row)==2));
                 string signature=String.Join("\n",items);if(signature!=previous){previous=signature;lb.ItemsSource=items;}
             }
             // A multiple selection made here is kept; single selections follow the native list.
@@ -548,10 +601,19 @@ internal sealed class Surface : IDisposable {
         add("Κλήση",32777,true);
         if(contacts){add("Επεξεργασία",32783,true);add("Νέα επαφή",32775,false);}else add("Προσθήκη στις επαφές",32775,true);
         // SMS to the selected row's mobile number (the first cell that looks like a phone number).
+        // For a missed call the window opens with the first ready-made message (SMS settings).
+        // Only the user part of "sip:6912345678@pbx1.example.com;user=phone": digits in the server name must not count.
+        Func<string,string> sipUser=cell=>{string x=(cell??"").Trim();
+            if(x.StartsWith("sip:",StringComparison.OrdinalIgnoreCase)||x.StartsWith("tel:",StringComparison.OrdinalIgnoreCase))x=x.Substring(4);
+            else if(x.StartsWith("sips:",StringComparison.OrdinalIgnoreCase))x=x.Substring(5);
+            int cut=x.IndexOfAny(new[]{'@',';'});return cut>=0?x.Substring(0,cut):x;};
+        Func<ListRow,string> rowNumber=row=>row==null?"":row.Cells.Select(sipUser).FirstOrDefault(x=>x.Count(char.IsDigit)>=10)??"";
+        Action smsToRow=()=>{var row=lb.SelectedItem as ListRow;if(row==null)return;string number=rowNumber(row);
+            string name=row.Title!=number&&row.Title.Count(char.IsDigit)<6?row.Title:"";
+            string mobile=SmsText.Mobile(number);   // "6912345678@server" -> "691 234 5678"
+            Sms.Compose(Native.GetAncestor(parent,2),mobile!=null?SmsText.Display(mobile):number,name,row.Missed);};
         var sms=new MenuItem{Header="Αποστολή SMS…"};menu.Opened+=(s,e)=>sms.IsEnabled=lb.SelectedItem is ListRow;
-        sms.Click+=(s,e)=>{var row=lb.SelectedItem as ListRow;if(row==null)return;
-            string number=row.Cells.FirstOrDefault(x=>x.Count(char.IsDigit)>=10)??"";
-            Sms.Compose(Native.GetAncestor(parent,2),number,contacts&&row.Title!=number?row.Title:"");};
+        sms.Click+=(s,e)=>smsToRow();
         menu.Items.Add(sms);
         add("Αντιγραφή",32781,true);add("Διαγραφή",32782,true);
         menu.Items.Add(new Separator());
@@ -562,9 +624,16 @@ internal sealed class Surface : IDisposable {
         lb.ContextMenu=menu;
         if(!fill)panel.Children.Add(lb);
         var actions=new UniformGrid{Columns=3,Margin=new Thickness(0,8,0,0)};
+        Button smsButton=null;
+        if(!contacts){
+            // Call history: SMS to a Greek mobile, e.g. to answer a missed call (placed after "Κλήση").
+            smsButton=Button("SMS",smsToRow);smsButton.Margin=new Thickness(3);smsButton.ToolTip="Αποστολή SMS στο κινητό της επιλεγμένης κλήσης";
+            refresh.Add(()=>smsButton.IsEnabled=SmsText.Mobile(rowNumber(lb.SelectedItem as ListRow))!=null);
+        }
         var buttons=contacts?new[]{new object[]{"Νέα επαφή",32775,false},new object[]{"Επεξεργασία",32783,true},new object[]{"Κλήση",32777,true}}
-                            :new[]{new object[]{"Κλήση",32777,true},new object[]{"Στις επαφές",32775,true},new object[]{"Διαγραφή",32782,true}};
+                            :new[]{new object[]{"Κλήση",32777,true},new object[]{"Στις επαφές",32775,true}};  // delete: context menu and Delete key; SMS goes second
         foreach(var spec in buttons){int cmd=(int)spec[1];bool needsRow=(bool)spec[2];var action=Button((string)spec[0],()=>{if(!needsRow||selectedRow()>=0)command(cmd);},cmd==32777);action.Margin=new Thickness(3);refresh.Add(()=>action.IsEnabled=!needsRow||selectedRow()>=0);actions.Children.Add(action);}
+        if(smsButton!=null)actions.Children.Insert(1,smsButton);
         DockPanel.SetDock(actions,Dock.Bottom);panel.Children.Add(actions);
         if(contacts&&fill)LetterIndex(panel,lb);
         if(fill){

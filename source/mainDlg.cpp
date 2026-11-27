@@ -71,6 +71,8 @@ static UINT WM_SHELLHOOKMESSAGE;
 static UINT WM_TASKBARRESTARTMESSAGE;
 
 static bool updateCheckerShow = false;
+// Code and reason of the last failed call, for the support diagnostics (no numbers).
+static CString nmLastCallError;
 
 static UINT BASED_CODE indicators[] =
 {
@@ -689,6 +691,12 @@ LRESULT CmainDlg::onCallState(WPARAM wParam, LPARAM lParam)
         }
     }
 
+    if (call_info->state == PJSIP_INV_STATE_DISCONNECTED && call_info->last_status >= 400
+        && call_info->last_status != 486 && call_info->last_status != 487) {
+        // Standard reason phrase only: the server's own text may carry numbers or user names.
+        nmLastCallError.Format(_T("%d %s (%s, %s)"), call_info->last_status, (LPCTSTR)MSIP::PjToStr(pjsip_get_status_text(call_info->last_status)),
+            call_info->role == PJSIP_ROLE_UAC ? _T("outgoing") : _T("incoming"), (LPCTSTR)CTime::GetCurrentTime().Format(_T("%Y-%m-%d %H:%M")));
+    }
     if (call_info->state == PJSIP_INV_STATE_DISCONNECTED) {
         if (call_info->role == PJSIP_ROLE_UAS && call_info->connect_duration.sec == 0 && call_info->connect_duration.msec == 0 && call_info->last_status != 486) {
             //-- missed call
@@ -1906,6 +1914,7 @@ BEGIN_MESSAGE_MAP(CmainDlg, CBaseDialog)
     ON_WM_PAINT()
     ON_BN_CLICKED(IDC_NM_ACCOUNT, OnNmAccount)
     ON_COMMAND(ID_APP_ABOUT, OnMenuAbout)
+    ON_COMMAND(ID_SUPPORT, OnMenuSupport)
     ON_WM_CREATE()
     ON_WM_SYSCOMMAND()
     ON_WM_QUERYENDSESSION()
@@ -1936,6 +1945,7 @@ BEGIN_MESSAGE_MAP(CmainDlg, CBaseDialog)
     ON_MESSAGE(UM_ON_CALL_TRANSFER_STATUS, onCallTransferStatus)
     ON_MESSAGE(UM_ON_PLAYER_STOP, onPlayerStop)
     ON_MESSAGE(UM_ON_COMMAND_LINE, onCommandLine)
+    ON_MESSAGE(UM_PROVISION_FILE, onProvisionFile)
     ON_MESSAGE(UM_ON_PAGER, onPager)
     ON_MESSAGE(UM_ON_PAGER_STATUS, onPagerStatus)
     ON_MESSAGE(UM_ON_BUDDY_STATE, onBuddyState)
@@ -1950,6 +1960,8 @@ BEGIN_MESSAGE_MAP(CmainDlg, CBaseDialog)
     ON_MESSAGE(UM_TAB_ICON_UPDATE, onTabIconUpdate)
     ON_MESSAGE(UM_ON_ACCOUNT, OnAccount)
     ON_COMMAND(ID_ACCOUNT_ADD, OnMenuAccountAdd)
+    ON_COMMAND(ID_ACCOUNT_ADD_FILE, OnMenuAccountAddFile)
+    ON_COMMAND(ID_ACCOUNT_EXPORT_FILE, OnMenuAccountExportFile)
     ON_COMMAND_RANGE(ID_ACCOUNT_EDIT_RANGE, ID_ACCOUNT_EDIT_RANGE + 99, OnMenuAccountEdit)
     ON_COMMAND_RANGE(ID_ACCOUNT_CHANGE_RANGE, ID_ACCOUNT_CHANGE_RANGE + 99, OnMenuAccountChange)
     ON_COMMAND(ID_ACCOUNT_EDIT_LOCAL, OnMenuAccountLocalEdit)
@@ -2480,6 +2492,100 @@ void CmainDlg::OnMenuAccountAdd()
     }
 }
 
+void CmainDlg::OnMenuAccountAddFile()
+{
+    CFileDialog dlgFile(TRUE, _T("ncall"), NULL, OFN_FILEMUSTEXIST | OFN_HIDEREADONLY,
+        CString(Translate(_T("nCall account setup"))) + _T(" (*.ncall)|*.ncall||"), this);
+    if (dlgFile.DoModal() == IDOK) {
+        ProvisionFromFile(dlgFile.GetPathName());
+    }
+}
+
+void CmainDlg::OnMenuAccountExportFile()
+{
+    if (accountSettings.accountId <= 0) {
+        AfxMessageBox(Translate(_T("Activate the account you want to export first.")), MB_ICONINFORMATION);
+        return;
+    }
+    CString name = accountSettings.account.label;
+    if (name.IsEmpty()) {
+        name = accountSettings.account.domain;
+    }
+    CFileDialog dlgFile(FALSE, _T("ncall"), MSIP::MakeFilenameFromString(name), OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY,
+        CString(Translate(_T("nCall account setup"))) + _T(" (*.ncall)|*.ncall||"), this);
+    if (dlgFile.DoModal() != IDOK) {
+        return;
+    }
+    if (ProvisionWrite(dlgFile.GetPathName(), accountSettings.account)) {
+        CString str = Translate(_T("The account setup file was saved. It does not contain the password."));
+        AfxMessageBox(str, MB_ICONINFORMATION);
+    }
+    else {
+        AfxMessageBox(Translate(_T("The account setup file could not be saved.")), MB_ICONWARNING);
+    }
+}
+
+LRESULT CmainDlg::onProvisionFile(WPARAM wParam, LPARAM lParam)
+{
+    CString* file = (CString*)lParam;
+    ProvisionFromFile(*file);
+    delete file;
+    return 0;
+}
+
+void CmainDlg::ProvisionFromFile(CString file)
+{
+    Account account;
+    CString error;
+    if (!ProvisionRead(file, &account, &error)) {
+        AfxMessageBox(error, MB_ICONWARNING);
+        return;
+    }
+    CString transport = account.transport == _T("tls") ? _T("TLS")
+        : account.transport == _T("tcp") ? _T("TCP")
+        : account.transport.IsEmpty() ? _T("UDP+TCP") : _T("UDP");
+    CString media = account.srtp.IsEmpty() ? Translate(_T("audio not encrypted"))
+        : account.srtp == _T("optional") ? Translate(_T("audio encrypted when the server supports it"))
+        : Translate(_T("encrypted audio"));
+    CString str;
+    str.Append(Translate(_T("A new account will be added from the setup file:")));
+    str.Append(_T("\n\n"));
+    if (!account.label.IsEmpty()) {
+        str.AppendFormat(_T("%s: %s\n"), Translate(_T("Account Name")), (LPCTSTR)account.label);
+    }
+    str.AppendFormat(_T("%s: %s\n"), Translate(_T("Server")), (LPCTSTR)(account.server.IsEmpty() ? account.domain : account.server));
+    if (!account.proxy.IsEmpty()) {
+        str.AppendFormat(_T("%s: %s\n"), Translate(_T("Proxy")), (LPCTSTR)account.proxy);
+    }
+    str.AppendFormat(_T("%s: %s, %s\n"), Translate(_T("Connection")), (LPCTSTR)transport, (LPCTSTR)media);
+    if (!account.username.IsEmpty()) {
+        str.AppendFormat(_T("%s: %s\n"), Translate(_T("Username")), (LPCTSTR)account.username);
+    }
+    Account existing;
+    for (int i = 1; accountSettings.AccountLoad(i, &existing); i++) {
+        if (existing.domain.CompareNoCase(account.domain) == 0 && existing.username == account.username) {
+            str.AppendFormat(_T("\n%s"), Translate(_T("You already have an account with these details; a second one will be added.")));
+            break;
+        }
+    }
+    str.AppendFormat(_T("\n%s"), Translate(_T("Continue only if the file was sent to you by your provider or by netmind. Calls go through this server.")));
+    str.AppendFormat(_T("\n\n%s"), Translate(_T("Continue?")));
+    if (AfxMessageBox(str, MB_YESNO | MB_ICONQUESTION) != IDYES) {
+        return;
+    }
+    ShowWindow(SW_SHOW);
+    SetForegroundWindow();
+    if (!accountDlg) {
+        accountDlg = new AccountDlg(this);
+    }
+    else {
+        accountDlg->SetForegroundWindow();
+    }
+    if (accountDlg) {
+        accountDlg->Load(-1, &account);
+    }
+}
+
 void CmainDlg::OnMenuAccountEdit(UINT nID)
 {
     if (!accountDlg) {
@@ -2735,6 +2841,10 @@ void CmainDlg::MainPopupMenu(bool isMenuButton)
 
                 // -- add
                 tracker->AppendMenu(MF_STRING, ID_ACCOUNT_ADD, Translate(_T("Add Account...")));
+                tracker->AppendMenu(MF_STRING, ID_ACCOUNT_ADD_FILE, Translate(_T("Add Account from Setup File...")));
+                if (accountSettings.accountId > 0) {
+                    tracker->AppendMenu(MF_STRING, ID_ACCOUNT_EXPORT_FILE, Translate(_T("Export Account Setup File...")));
+                }
                 //-- edit
                 CMenu editMenu;
                 editMenu.CreatePopupMenu();
@@ -4537,6 +4647,12 @@ bool CmainDlg::CommandLine(CString params) {
         params = params.Mid(1, params.GetLength() - 2);
     }
     if (!params.IsEmpty()) {
+        if (IsProvisionFile(params)) {
+            // Double click on an account setup file (.ncall). Handled after this message
+            // returns: the sender may be another nCall process waiting in SendMessage.
+            PostMessage(UM_PROVISION_FILE, 0, (LPARAM)new CString(params));
+            return true;
+        }
         if (params.Find(_T("msip:")) == 0) {
             CString cmd = params.Mid(5);
             if (cmd == _T("minimize")) {
@@ -6284,6 +6400,80 @@ void CmainDlg::Unsubscribe()
     isSubscribed = false;
 }
 
+
+// Support diagnostics: what netmind needs to see on a support call. Never passwords,
+// user names, phone numbers or contacts; the customer sees the full text before sharing it.
+CString CmainDlg::SupportDiagnostics()
+{
+    CString s;
+    s.Format(_T("nCall %s%s\r\n"), _T(_GLOBAL_VERSION), accountSettings.isPortable ? _T(" (portable)") : _T(""));
+    typedef LONG(WINAPI* RtlGetVersionFn)(OSVERSIONINFOW*);
+    RtlGetVersionFn rtlGetVersion = (RtlGetVersionFn)GetProcAddress(GetModuleHandle(_T("ntdll.dll")), "RtlGetVersion");
+    OSVERSIONINFOW os = { sizeof(os) };
+    if (rtlGetVersion && rtlGetVersion(&os) == 0) {
+        s.AppendFormat(_T("Windows %lu.%lu.%lu\r\n"), os.dwMajorVersion, os.dwMinorVersion, os.dwBuildNumber);
+    }
+    if (accountSettings.accountId > 0) {
+        const Account& a = accountSettings.account;
+        s.AppendFormat(_T("Server: %s\r\n"), (LPCTSTR)(a.server.IsEmpty() ? a.domain : a.server));
+        if (!a.proxy.IsEmpty()) {
+            s.AppendFormat(_T("Proxy: %s\r\n"), (LPCTSTR)a.proxy);
+        }
+        s.AppendFormat(_T("Transport: %s, SRTP: %s, ICE: %s, publish: %s\r\n"),
+            a.transport.IsEmpty() ? _T("udp+tcp") : (LPCTSTR)a.transport, a.srtp.IsEmpty() ? _T("off") : (LPCTSTR)a.srtp,
+            a.ice ? _T("on") : _T("off"), a.publish ? _T("on") : _T("off"));
+        if (is_pjsua_running() && pjsua_acc_is_valid(account)) {
+            pjsua_acc_info info;
+            if (pjsua_acc_get_info(account, &info) == PJ_SUCCESS) {
+                if (info.has_registration) {
+                    // Standard reason phrase, not the server's text (it may contain the user name).
+                    s.AppendFormat(_T("Registration: %d %s\r\n"), info.status, (LPCTSTR)MSIP::PjToStr(pjsip_get_status_text(info.status)));
+                }
+                else {
+                    s.Append(_T("Registration: none\r\n"));
+                }
+            }
+        }
+        else {
+            s.Append(_T("Registration: not connected\r\n"));
+        }
+    }
+    else {
+        s.Append(_T("Account: none active\r\n"));
+    }
+    s.AppendFormat(_T("TLS certificate check: %s, DNS SRV: %s, STUN: %s\r\n"),
+        accountSettings.tlsVerifyServer ? _T("on") : _T("off"), accountSettings.dnsSrv ? _T("on") : _T("off"),
+        accountSettings.enableSTUN && !accountSettings.stun.IsEmpty() ? (LPCTSTR)accountSettings.stun : _T("off"));
+    s.AppendFormat(_T("Last failed call: %s\r\n"), nmLastCallError.IsEmpty() ? _T("-") : (LPCTSTR)nmLastCallError);
+    s.AppendFormat(_T("Audio input: %s\r\nAudio output: %s\r\nRing device: %s\r\n"),
+        accountSettings.audioInputDevice.IsEmpty() ? _T("default") : (LPCTSTR)accountSettings.audioInputDevice,
+        accountSettings.audioOutputDevice.IsEmpty() ? _T("default") : (LPCTSTR)accountSettings.audioOutputDevice,
+        accountSettings.audioRingDevice.IsEmpty() ? _T("default") : (LPCTSTR)accountSettings.audioRingDevice);
+    if (is_pjsua_running()) {
+        s.AppendFormat(_T("Audio devices found: %u, active calls: %u\r\n"), pjmedia_aud_dev_count(), pjsua_call_get_count());
+    }
+    s.AppendFormat(_T("Codecs: %s\r\n"), (LPCTSTR)accountSettings.audioCodecs);
+    return s;
+}
+
+void CmainDlg::OnMenuSupport()
+{
+    CString text = SupportDiagnostics();
+    CW2A utf8(text, CP_UTF8);
+    DWORD count = 0;
+    const BYTE* data = reinterpret_cast<const BYTE*>(static_cast<const char*>(utf8));
+    DWORD size = static_cast<DWORD>(strlen(utf8));
+    if (CryptBinaryToStringW(data, size, CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF, nullptr, &count)) {
+        CString base64;
+        CryptBinaryToStringW(data, size, CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF, base64.GetBuffer(count), &count);
+        base64.ReleaseBuffer();
+        if (NetmindUI(L"Support", NetmindHandle(m_hWnd) + L"|" + base64) == 1) {
+            return;
+        }
+    }
+    // Without the modern UI: the same text, to read out on the phone.
+    AfxMessageBox(CString(_T("netmind: 2331200260, info@netmind.gr\r\n\r\n")) + text, MB_ICONINFORMATION);
+}
 
 void CmainDlg::OnMenuAbout() {
     if(NetmindUI(L"About",NetmindHandle(m_hWnd))==1)return;

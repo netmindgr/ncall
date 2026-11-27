@@ -10,3 +10,5 @@
 vcpkg-ports/** text eol=lf
 # Internal notes (providers, plans, test status): never in source archives or the public repository.
 /internal export-ignore
+# Dependency update PRs belong to the development repository only.
+/.github/dependabot.yml export-ignore

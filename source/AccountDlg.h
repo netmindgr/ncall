@@ -34,13 +34,17 @@ public:
 	~AccountDlg();
 	enum { IDD = IDD_ACCOUNT };
 
-	void Load(int id);
+	// preset: a new account filled in from an account setup file (.ncall).
+	void Load(int id, const Account* preset = NULL);
 
 private:
 	int width;
 	int height;
 	int accountId;
 	Account m_Account;
+	// Filled in from a setup file: the provider combo was matched, not chosen by the user,
+	// so saving must not apply the provider's general settings (DNS SRV).
+	bool m_presetFromFile = false;
 protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnDestroy();

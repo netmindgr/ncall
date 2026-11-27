@@ -21,6 +21,7 @@
 #include <dpapi.h>
 #pragma comment(lib, "crypt32.lib")
 #include "Crypto.h"
+#include "langpack.h"
 
 #include <algorithm>
 #include <vector>
@@ -338,6 +339,193 @@ void AccountSettings::Init()
 
 AccountSettings::AccountSettings()
 {
+}
+
+// Account setup files (.ncall): a small UTF-8 INI file that a provider or netmind sends
+// to a customer, so the account form opens already filled in. It carries only the server
+// side of an account. A password is never written and never read; general settings
+// (TLS certificate checks, DNS, codecs) and dial rules are not touched.
+static const LONGLONG NM_PROVISION_MAX_SIZE = 64 * 1024;
+static const int NM_PROVISION_MAX_VALUE = 256;
+
+bool IsProvisionFile(const CString& path)
+{
+    // A local or network path, never a link such as sip: or tel:.
+    bool isPath = (path.GetLength() > 3 && path[1] == _T(':') && path[2] == _T('\\'))
+        || path.Left(2) == _T("\\\\");
+    return isPath && path.Right(6).CompareNoCase(_T(".ncall")) == 0;
+}
+
+static bool ProvisionText(const CString& file, CString* text)
+{
+    LONGLONG size = FileSize(file);
+    if (size <= 0 || size > NM_PROVISION_MAX_SIZE) {
+        return false;
+    }
+    CFile f;
+    if (!f.Open(file, CFile::modeRead | CFile::shareDenyWrite)) {
+        return false;
+    }
+    std::vector<BYTE> data((size_t)size);
+    UINT read = f.Read(data.data(), (UINT)data.size());
+    f.Close();
+    if (read != data.size()) {
+        return false;
+    }
+    if (read >= 2 && data[0] == 0xFF && data[1] == 0xFE) {
+        *text = CString((LPCWSTR)(data.data() + 2), (int)((read - 2) / sizeof(WCHAR)));
+        return true;
+    }
+    size_t start = (read >= 3 && data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF) ? 3 : 0;
+    int length = (int)(read - start);
+    if (length == 0) {
+        return false;
+    }
+    int wide = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, (LPCSTR)data.data() + start, length, NULL, 0);
+    if (wide <= 0) {
+        return false;
+    }
+    MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, (LPCSTR)data.data() + start, length, text->GetBuffer(wide), wide);
+    text->ReleaseBuffer(wide);
+    return true;
+}
+
+bool ProvisionRead(const CString& file, Account* account, CString* error)
+{
+    *account = Account();
+    CString text;
+    if (!ProvisionText(file, &text)) {
+        *error = Translate(_T("The account setup file could not be read."));
+        return false;
+    }
+    // Keys of [nCall] and [Account], lower case; everything else is ignored.
+    CMapStringToString header, values;
+    CMapStringToString* current = NULL;
+    int pos = 0;
+    while (pos < text.GetLength()) {
+        int end = text.Find(_T('\n'), pos);
+        if (end == -1) {
+            end = text.GetLength();
+        }
+        CString line = text.Mid(pos, end - pos);
+        pos = end + 1;
+        line.Trim();
+        if (line.IsEmpty() || line[0] == _T(';') || line[0] == _T('#')) {
+            continue;
+        }
+        if (line[0] == _T('[') && line.Right(1) == _T("]")) {
+            CString section = line.Mid(1, line.GetLength() - 2).Trim();
+            current = section.CompareNoCase(_T("nCall")) == 0 ? &header
+                : section.CompareNoCase(_T("Account")) == 0 ? &values : NULL;
+            continue;
+        }
+        int eq = line.Find(_T('='));
+        if (current == NULL || eq <= 0) {
+            continue;
+        }
+        CString key = line.Left(eq).Trim().MakeLower();
+        CString value = line.Mid(eq + 1).Trim();
+        for (int i = 0; i < value.GetLength(); i++) {
+            if (value[i] < 0x20) {
+                value.SetAt(i, _T(' '));
+            }
+        }
+        current->SetAt(key, value.Left(NM_PROVISION_MAX_VALUE));
+    }
+    CString format;
+    if (!header.Lookup(_T("format"), format) || format != _T("1")) {
+        *error = Translate(_T("This is not an nCall account setup file, or it was made by a newer version."));
+        return false;
+    }
+    auto get = [&values](LPCTSTR key, LPCTSTR def) {
+        CString value;
+        return values.Lookup(key, value) ? value : CString(def);
+    };
+    account->label = get(_T("label"), _T(""));
+    account->server = get(_T("server"), _T(""));
+    account->proxy = get(_T("proxy"), _T(""));
+    account->domain = get(_T("domain"), _T(""));
+    account->username = get(_T("username"), _T(""));
+    account->authID = get(_T("authid"), _T(""));
+    account->displayName = get(_T("displayname"), _T(""));
+    account->voicemailNumber = get(_T("voicemailnumber"), _T(""));
+    account->transport = get(_T("transport"), _T("udp")).MakeLower();
+    account->srtp = get(_T("srtp"), _T("")).MakeLower();
+    account->hideCID = get(_T("hidecid"), _T("")).MakeLower();
+    account->registerRefresh = _wtoi(get(_T("registerrefresh"), _T("300")));
+    if (account->registerRefresh <= 0) {
+        account->registerRefresh = 300;
+    }
+    else if (account->registerRefresh < 10) {
+        account->registerRefresh = 10;
+    }
+    account->keepAlive = _wtoi(get(_T("keepalive"), _T("15")));
+    if (account->keepAlive <= 0) {
+        account->keepAlive = 15;
+    }
+    else if (account->keepAlive == 1) {
+        account->keepAlive = 2;
+    }
+    account->publish = get(_T("publish"), _T("0")) == _T("1");
+    account->ice = get(_T("ice"), _T("0")) == _T("1");
+    account->allowRewrite = get(_T("allowrewrite"), _T("0")) == _T("1");
+    account->disableSessionTimer = get(_T("disablesessiontimer"), _T("0")) == _T("1");
+    // The password is filled in by the customer, never by a file.
+    account->password.Empty();
+    account->rememberPassword = true;
+
+    bool valid = !account->domain.IsEmpty()
+        && (account->transport == _T("udp") || account->transport == _T("tcp") || account->transport == _T("tls") || account->transport.IsEmpty())
+        && (account->srtp.IsEmpty() || account->srtp == _T("optional") || account->srtp == _T("mandatory") || account->srtp == _T("dtls-sdes") || account->srtp == _T("dtls"))
+        && (account->hideCID.IsEmpty() || account->hideCID == _T("soft") || account->hideCID == _T("hard"));
+    if (!valid) {
+        *error = Translate(_T("The account setup file is incomplete or has invalid values."));
+        return false;
+    }
+    return true;
+}
+
+bool ProvisionWrite(const CString& file, const Account& account)
+{
+    auto line = [](LPCTSTR key, CString value) {
+        value.Replace(_T('\r'), _T(' '));
+        value.Replace(_T('\n'), _T(' '));
+        value.Trim();
+        CString res;
+        if (!value.IsEmpty()) {
+            res.Format(_T("%s=%s\r\n"), key, (LPCTSTR)value);
+        }
+        return res;
+    };
+    CString text;
+    text.Append(_T("; nCall account setup. Open it with nCall; the password is typed in by the user.\r\n"));
+    text.Append(_T("[nCall]\r\nformat=1\r\n\r\n[Account]\r\n"));
+    text.Append(line(_T("label"), account.label));
+    text.Append(line(_T("server"), account.server));
+    text.Append(line(_T("proxy"), account.proxy));
+    text.Append(line(_T("domain"), account.domain));
+    text.Append(line(_T("username"), account.username));
+    text.Append(line(_T("authID"), account.authID));
+    text.Append(line(_T("displayName"), account.displayName));
+    text.Append(line(_T("voicemailNumber"), account.voicemailNumber));
+    text.AppendFormat(_T("transport=%s\r\n"), (LPCTSTR)account.transport);
+    text.Append(line(_T("SRTP"), account.srtp));
+    text.Append(line(_T("hideCID"), account.hideCID));
+    text.AppendFormat(_T("registerRefresh=%d\r\nkeepAlive=%d\r\n"), account.registerRefresh, account.keepAlive);
+    text.AppendFormat(_T("publish=%d\r\nICE=%d\r\nallowRewrite=%d\r\ndisableSessionTimer=%d\r\n"),
+        account.publish ? 1 : 0, account.ice ? 1 : 0, account.allowRewrite ? 1 : 0, account.disableSessionTimer ? 1 : 0);
+
+    int size = WideCharToMultiByte(CP_UTF8, 0, text, text.GetLength(), NULL, 0, NULL, NULL);
+    std::vector<char> data(size + 3);
+    data[0] = (char)0xEF; data[1] = (char)0xBB; data[2] = (char)0xBF;
+    WideCharToMultiByte(CP_UTF8, 0, text, text.GetLength(), data.data() + 3, size, NULL, NULL);
+    CFile f;
+    if (!f.Open(file, CFile::modeCreate | CFile::modeWrite | CFile::shareExclusive)) {
+        return false;
+    }
+    f.Write(data.data(), (UINT)data.size());
+    f.Close();
+    return true;
 }
 
 void AccountSettings::AccountDelete(int id)

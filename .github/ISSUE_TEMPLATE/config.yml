@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ζήτημα ασφάλειας
+    url: https://github.com/netmindgr/ncall/blob/main/SECURITY.md
+    about: Αναφέρετε ιδιωτικά πιθανά προβλήματα ασφάλειας, όχι σε δημόσιο issue.
+  - name: Στήσιμο και υποστήριξη από τη netmind
+    url: https://www.netmind.gr/
+    about: Βοήθεια με λογαριασμούς SIP, τηλεφωνικό κέντρο ή εγκατάσταση σε επιχείρηση.

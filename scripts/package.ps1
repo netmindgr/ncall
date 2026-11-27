@@ -1,10 +1,19 @@
-﻿param([Parameter(Mandatory=$true)][string]$VcpkgRoot,[string]$ISCCPath)
+﻿# -ChecksumsOnly: after the release workflow replaced the setup with its signed copy, only SHA256SUMS and latest.json are rewritten.
+param([string]$VcpkgRoot,[string]$ISCCPath,[switch]$ChecksumsOnly)
 $ErrorActionPreference='Stop'
 $projectRoot=Split-Path -Parent $PSScriptRoot
 # Version and vcpkg baseline come from vcpkg.json only.
 $manifest=Get-Content -LiteralPath (Join-Path $projectRoot 'vcpkg.json') -Raw | ConvertFrom-Json
 $version=$manifest.'version-string'
 $baseline=$manifest.'builtin-baseline'
+$setupFile=Join-Path $projectRoot "installer/ncall-$version-setup.exe"
+if ($ChecksumsOnly) {
+    $commit=(& git -C $projectRoot rev-parse HEAD).Trim()
+    $outputs=@((Join-Path $projectRoot "ncall-$version-source.zip"),(Join-Path $projectRoot "ncall-$version-portable.zip"))
+    if (Test-Path -LiteralPath $setupFile) { $outputs+=$setupFile; $outputs+=Join-Path $projectRoot 'installer/ncall-setup.exe' }
+    foreach ($file in $outputs) { if (!(Test-Path -LiteralPath $file)) { throw "Missing package: $file" } }
+} else {
+if (!$VcpkgRoot) { throw 'VcpkgRoot is required.' }
 $revision=& git -C $VcpkgRoot rev-parse HEAD
 if ($LASTEXITCODE -ne 0 -or $revision.Trim() -ne $baseline) { throw "Pinned vcpkg checkout required ($baseline)." }
 # The source archive is built from the committed tree, so local files never leak into it.
@@ -79,12 +88,13 @@ if ($ISCCPath) {
     Copy-Item -LiteralPath (Join-Path $projectRoot "installer/ncall-$version-setup.exe") -Destination $stable -Force
     $outputs+=$stable
 }
-# Checksums last, so they cover the final (later: signed) files.
+}
+# Checksums last, so they cover the final (signed) files.
 $sums=Join-Path $projectRoot "ncall-$version-SHA256SUMS.txt"
 $outputs | ForEach-Object { '{0}  {1}' -f (Get-FileHash -LiteralPath $_ -Algorithm SHA256).Hash.ToLowerInvariant(),(Split-Path -Leaf $_) } | Set-Content -LiteralPath $sums -Encoding ascii
 # Update feed for nCall's automatic updates: upload latest.json with the release assets.
-if ($ISCCPath) {
-    $setup = Join-Path $projectRoot "installer/ncall-$version-setup.exe"
+if (Test-Path -LiteralPath $setupFile) {
+    $setup = $setupFile
     $feed = [ordered]@{
         version = $version
         url = "https://github.com/netmindgr/ncall/releases/download/v$version/ncall-$version-setup.exe"

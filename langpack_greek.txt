@@ -942,3 +942,60 @@ Opus με δύο κανάλια
 
 [Other provider (manual setup)]
 Άλλος πάροχος (χειροκίνητη ρύθμιση)
+
+[Add Account from Setup File...]
+Νέος λογαριασμός από αρχείο ρύθμισης…
+
+[Export Account Setup File...]
+Εξαγωγή αρχείου ρύθμισης λογαριασμού…
+
+[nCall account setup]
+Ρύθμιση λογαριασμού nCall
+
+[Activate the account you want to export first.]
+Ενεργοποιήστε πρώτα τον λογαριασμό που θέλετε να εξαγάγετε.
+
+[The account setup file was saved. It does not contain the password.]
+Το αρχείο ρύθμισης αποθηκεύτηκε. Δεν περιέχει τον κωδικό.
+
+[The account setup file could not be saved.]
+Δεν ήταν δυνατή η αποθήκευση του αρχείου ρύθμισης.
+
+[The account setup file could not be read.]
+Δεν ήταν δυνατή η ανάγνωση του αρχείου ρύθμισης λογαριασμού.
+
+[This is not an nCall account setup file, or it was made by a newer version.]
+Δεν είναι αρχείο ρύθμισης λογαριασμού nCall ή φτιάχτηκε από νεότερη έκδοση.
+
+[The account setup file is incomplete or has invalid values.]
+Το αρχείο ρύθμισης είναι ελλιπές ή έχει μη έγκυρες τιμές.
+
+[audio not encrypted]
+ήχος χωρίς κρυπτογράφηση
+
+[audio encrypted when the server supports it]
+κρυπτογραφημένος ήχος όταν το υποστηρίζει ο server
+
+[encrypted audio]
+κρυπτογραφημένος ήχος
+
+[A new account will be added from the setup file:]
+Θα προστεθεί νέος λογαριασμός από το αρχείο ρύθμισης:
+
+[Server]
+Server
+
+[Proxy]
+Proxy
+
+[Connection]
+Σύνδεση
+
+[You already have an account with these details; a second one will be added.]
+Υπάρχει ήδη λογαριασμός με αυτά τα στοιχεία· θα προστεθεί δεύτερος.
+
+[Continue only if the file was sent to you by your provider or by netmind. Calls go through this server.]
+Συνεχίστε μόνο αν το αρχείο σάς το έστειλε ο πάροχός σας ή η netmind. Οι κλήσεις σας θα περνούν από αυτόν τον server.
+
+[Continue?]
+Να συνεχίσω;

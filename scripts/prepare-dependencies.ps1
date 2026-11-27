@@ -36,7 +36,12 @@ $destination=Join-Path $projectRoot 'third_party/netmind'
 New-Item -ItemType Directory -Path (Join-Path $destination 'include'),(Join-Path $destination 'lib'),(Join-Path $destination 'licenses') -Force | Out-Null
 Copy-Item -Path (Join-Path $PreparedInstallRoot 'include/*') -Destination (Join-Path $destination 'include') -Recurse -Force
 Copy-Item -Path (Join-Path $PreparedInstallRoot 'lib/*.lib') -Destination (Join-Path $destination 'lib') -Force
+# Licenses are committed: rewrite one only when its text changes, not its line endings
+# (a Windows checkout has CRLF, some upstream copyright files have LF).
 foreach ($name in @('openssl','opus','bcg729','sqlite3','sqlitecpp')) {
-    Copy-Item -LiteralPath (Join-Path $PreparedInstallRoot "share/$name/copyright") -Destination (Join-Path $destination "licenses/$name.txt") -Force
+    $source=Join-Path $PreparedInstallRoot "share/$name/copyright"
+    $target=Join-Path $destination "licenses/$name.txt"
+    if ((Test-Path -LiteralPath $target) -and ((Get-Content -LiteralPath $source -Raw) -replace "`r`n","`n") -ceq ((Get-Content -LiteralPath $target -Raw) -replace "`r`n","`n")) { continue }
+    Copy-Item -LiteralPath $source -Destination $target -Force
 }
 Write-Host 'Static x86 dependencies prepared.'

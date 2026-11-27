@@ -190,6 +190,11 @@ extern int dpiY;
 extern bool firstRun;
 extern CTime startTime;
 
+// Account setup files (.ncall), see settings.cpp.
+bool ProvisionRead(const CString& file, Account* account, CString* error);
+bool ProvisionWrite(const CString& file, const Account& account);
+bool IsProvisionFile(const CString& path);
+
 CString ShortcutEncode(Shortcut *pShortcut);
 void ShortcutDecode(const CString& str, Shortcut* pShortcut, bool noDefault = false);
 void ShortcutsLoad(CString filename = _T(""));

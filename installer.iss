@@ -1,6 +1,6 @@
 ; nCall per-user installer. GPL-3.0-or-later.
 #ifndef AppVersion
-  #define AppVersion "0.2.3"
+  #define AppVersion "0.3.0"
 #endif
 #define AppExeName "ncall.exe"
 #ifdef LifecycleTest
@@ -34,8 +34,12 @@ InfoBeforeFile=branding\installer-info.txt
 AppCopyright=© 2011-2026 MicroSIP, © Teluu Inc., © 2026 netmind. GPL-3.0-or-later
 VersionInfoVersion={#AppVersion}.0
 VersionInfoCompany=netmind
+VersionInfoProductName={#AppName}
+VersionInfoProductVersion={#AppVersion}
 Compression=lzma2
 SolidCompression=yes
+; .ncall account setup files: Explorer refreshes the icon and the "open" action.
+ChangesAssociations=yes
 WizardStyle=modern
 ; Greek customers: the installer starts in Greek without asking (English stays available via /LANG=english).
 ShowLanguageDialog=no
@@ -75,6 +79,12 @@ Root: HKCU; Subkey: "Software\{#AppName}\Capabilities"; ValueType: string; Value
 Root: HKCU; Subkey: "Software\{#AppName}\Capabilities\URLAssociations"; ValueType: string; ValueName: "tel"; ValueData: "nCall.URL"
 Root: HKCU; Subkey: "Software\{#AppName}\Capabilities\URLAssociations"; ValueType: string; ValueName: "sip"; ValueData: "nCall.URL"
 Root: HKCU; Subkey: "Software\{#AppName}\Capabilities\URLAssociations"; ValueType: string; ValueName: "callto"; ValueData: "nCall.URL"
+; Account setup files (.ncall) open in nCall, which asks before adding the account.
+Root: HKCU; Subkey: "Software\Classes\.ncall"; ValueType: string; ValueName: ""; ValueData: "nCall.Setup"; Flags: uninsdeletevalue uninsdeletekeyifempty
+Root: HKCU; Subkey: "Software\Classes\nCall.Setup"; ValueType: string; ValueName: ""; ValueData: "Ρύθμιση λογαριασμού nCall"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\nCall.Setup\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#AppExeName},0"
+Root: HKCU; Subkey: "Software\Classes\nCall.Setup\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#AppExeName}"" ""%1"""
+Root: HKCU; Subkey: "Software\{#AppName}\Capabilities\FileAssociations"; ValueType: string; ValueName: ".ncall"; ValueData: "nCall.Setup"
 Root: HKCU; Subkey: "Software\RegisteredApplications"; ValueType: string; ValueName: "{#AppName}"; ValueData: "Software\{#AppName}\Capabilities"; Flags: uninsdeletevalue
 
 [UninstallDelete]

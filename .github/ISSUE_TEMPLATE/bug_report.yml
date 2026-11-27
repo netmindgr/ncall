@@ -1,0 +1,59 @@
+name: Πρόβλημα εφαρμογής
+description: Κάτι δεν λειτουργεί όπως περιμένατε
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Μη γράφετε κωδικούς, ονόματα χρήστη SIP, κλειδιά SMS ή αριθμούς τηλεφώνου.** Αφαιρέστε τους και από εικόνες και αρχεία καταγραφής.
+        Για θέματα ασφάλειας μην ανοίγετε issue: δείτε το [SECURITY.md](https://github.com/netmindgr/ncall/blob/main/SECURITY.md).
+  - type: input
+    id: version
+    attributes:
+      label: Έκδοση nCall
+      description: Μενού → Σχετικά
+      placeholder: π.χ. 0.2.4
+    validations:
+      required: true
+  - type: dropdown
+    id: windows
+    attributes:
+      label: Windows
+      options:
+        - Windows 11
+        - Windows 10
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: Τύπος εγκατάστασης
+      options:
+        - Εγκατάσταση (ncall-setup.exe)
+        - Χωρίς εγκατάσταση (portable)
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: Τι συνέβη
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Βήματα αναπαραγωγής
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Τι περιμένατε να γίνει
+  - type: textarea
+    id: extra
+    attributes:
+      label: Εικόνα, μήνυμα σφάλματος ή καταγραφή
+      description: Χωρίς κωδικούς και προσωπικά δεδομένα.

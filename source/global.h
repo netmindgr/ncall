@@ -86,6 +86,7 @@ enum EUserWndMessages
     UM_DBLCLICKTAB,
     UM_QUERYTAB,
     UM_UPDATE_CHECKER_LOADED,
+    UM_PROVISION_FILE,
 
 };
 

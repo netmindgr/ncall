@@ -256,7 +256,7 @@ void AccountDlg::OnBnClickedCancel()
     OnClose();
 }
 
-void AccountDlg::Load(int id)
+void AccountDlg::Load(int id, const Account* preset)
 {
     CEdit* edit;
     CComboBox* combobox;
@@ -266,6 +266,7 @@ void AccountDlg::Load(int id)
     bool found;
 
     accountId = id;
+    m_presetFromFile = preset != NULL;
     if (accountSettings.AccountLoad(id, &m_Account) || id == 0) {
         accountId = id;
         if (accountId && accountSettings.accountId == accountId && !accountSettings.account.rememberPassword) {
@@ -276,6 +277,13 @@ void AccountDlg::Load(int id)
     }
     else {
         accountId = -1;
+    }
+    if (preset) {
+        // Always a new account: a setup file never changes an existing one.
+        id = -1;
+        accountId = -1;
+        m_Account = *preset;
+        m_Account.rememberPassword = true;
     }
 
     bool isEdit = (accountId > 0 && (!m_Account.username.IsEmpty() || accountId > 1));
@@ -414,6 +422,10 @@ void AccountDlg::Load(int id)
     else {
         GetDlgItem(IDC_SYSLINK_ACCOUNT_DELETE)->ShowWindow(SW_HIDE);
     }
+    if (preset) {
+        // The server side is filled in: the customer only types what is missing.
+        GotoDlgCtrl(GetDlgItem(m_Account.username.IsEmpty() ? IDC_EDIT_USERNAME : IDC_EDIT_PASSWORD));
+    }
 }
 
 void AccountDlg::OnBnClickedOk()
@@ -523,7 +535,7 @@ void AccountDlg::OnBnClickedOk()
     m_Account.disableSessionTimer = ((CButton*)GetDlgItem(IDC_SESSION_TIMER))->GetCheck();
 
     int provider = ((CComboBox*)GetDlgItem(IDC_ACCOUNT_PROVIDER))->GetCurSel();
-    if (provider > 0 && provider <= _countof(providerPresets) && accountId != 0 && !providerPresets[provider - 1].dnsSrv) {
+    if (provider > 0 && provider <= _countof(providerPresets) && accountId != 0 && !providerPresets[provider - 1].dnsSrv && !m_presetFromFile) {
         accountSettings.dnsSrv = false;  // saved with the other settings below
     }
 
@@ -588,6 +600,7 @@ void AccountDlg::OnCbnSelchangeProvider()
         return;  // manual setup: the fields stay as they are
     }
     const ProviderPreset& preset = providerPresets[provider - 1];
+    m_presetFromFile = false;  // chosen by the user: the provider's settings apply in full
     CString str;
     GetDlgItem(IDC_ACCOUNT_LABEL)->GetWindowText(str);
     if (str.Trim().IsEmpty()) {

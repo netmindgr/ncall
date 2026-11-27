@@ -79,6 +79,31 @@ internal sealed class SmsSettings {
     }
 }
 
+// Ready-made messages, one per line in sms-templates.txt (profile folder). The first one is offered
+// for missed calls. "{όνομα}" becomes the contact's name, or is left out when there is no name.
+internal static class SmsTemplates {
+    internal const string NamePlaceholder="{όνομα}";
+    static string FilePath{get{return SmsSettings.FileIn("sms-templates.txt");}}
+    // Under 70 characters: one SMS even in Greek (Unicode).
+    static readonly string[] Defaults={"Είδαμε την κλήση σας και θα σας καλέσουμε σύντομα."};
+    internal static List<string> Load(){
+        try{
+            if(!File.Exists(FilePath))return Defaults.ToList();
+            return File.ReadAllLines(FilePath,Encoding.UTF8).Select(x=>x.Trim()).Where(x=>x!="").ToList();
+        }catch(Exception e){Host.Error(e);return new List<string>();}
+    }
+    internal static void Save(IEnumerable<string> templates){
+        Directory.CreateDirectory(SmsSettings.Folder);
+        File.WriteAllLines(FilePath,templates.Select(x=>x.Trim()).Where(x=>x!=""),Encoding.UTF8);
+    }
+    internal static string Fill(string template,string name){
+        name=(name??"").Trim();
+        if(name!="")return template.Replace(NamePlaceholder,name);
+        string text=Regex.Replace(template,"\\s*"+Regex.Escape(NamePlaceholder),"");
+        return Regex.Replace(text,"\\s+([,.!;])","$1").Trim();
+    }
+}
+
 // HTTP helpers shared by the providers (https only, TLS 1.2/1.3).
 internal static class SmsHttp {
     internal sealed class Reply { internal int Code; internal string Body=""; }
@@ -442,6 +467,9 @@ internal static class Sms {
         var userCaption=Caption("");panel.Children.Add(userCaption);var user=new TextBox{Text=s.Username};panel.Children.Add(user);
         var secretCaption=Caption("");panel.Children.Add(secretCaption);var password=new PasswordBox{Password=s.Password};panel.Children.Add(password);
         panel.Children.Add(Caption("Αποστολέας (έως 11 λατινικοί χαρακτήρες ή 13 ψηφία)"));var sender=new TextBox{Text=s.Sender,MaxLength=13};panel.Children.Add(sender);
+        panel.Children.Add(Caption("Έτοιμα μηνύματα: ένα σε κάθε γραμμή. Το "+SmsTemplates.NamePlaceholder+" γίνεται το όνομα της επαφής. Το πρώτο προτείνεται στις αναπάντητες."));
+        var templates=new TextBox{Text=String.Join("\r\n",SmsTemplates.Load()),AcceptsReturn=true,TextWrapping=TextWrapping.Wrap,MinHeight=70,MaxHeight=140,VerticalScrollBarVisibility=ScrollBarVisibility.Auto};
+        System.Windows.Automation.AutomationProperties.SetName(templates,"Έτοιμα μηνύματα");panel.Children.Add(templates);
         var result=Muted("",12);result.Margin=new Thickness(0,10,0,0);panel.Children.Add(result);
         Func<ISmsProvider> chosen=()=>SmsProviders.All[Math.Max(0,provider.SelectedIndex)];
         Action labels=()=>{var p=chosen();help.Text=p.Help;userCaption.Text=p.UserLabel??"";
@@ -461,14 +489,15 @@ internal static class Sms {
             Run(()=>p.Balance(x),balance=>{test.IsEnabled=true;result.Text="Συνδέθηκε. Υπόλοιπο: "+balance;},error=>{test.IsEnabled=true;result.Text=error;},p.Name);
         });test.Margin=new Thickness(0,0,4,0);actions.Children.Add(test);
         var save=Surface.Button("Αποθήκευση",()=>{string problem=validate();if(problem!=null){result.Text=problem;return;}
-            try{read().Save();chosen().Forget();w.Close();}catch(Exception e){Host.Error(e);result.Text="Δεν ήταν δυνατή η αποθήκευση των ρυθμίσεων.";}},true);
+            try{read().Save();SmsTemplates.Save(templates.Text.Split('\n'));chosen().Forget();w.Close();}catch(Exception e){Host.Error(e);result.Text="Δεν ήταν δυνατή η αποθήκευση των ρυθμίσεων.";}},true);
         save.Margin=new Thickness(4,0,4,0);save.IsDefault=true;actions.Children.Add(save);
         var cancel=Surface.Button("Ακύρωση",()=>w.Close());cancel.Margin=new Thickness(4,0,0,0);cancel.IsCancel=true;actions.Children.Add(cancel);
         panel.Children.Add(actions);
         w.ShowDialog();
     }
 
-    internal static void Compose(IntPtr owner,string number,string name){
+    // missed: answer to a missed call, the message starts as the first ready-made one.
+    internal static void Compose(IntPtr owner,string number,string name,bool missed=false){
         var s=SmsSettings.Load();
         if(!s.Complete){Settings(owner);s=SmsSettings.Load();if(!s.Complete)return;}
         var provider=SmsProviders.Find(s.Provider);
@@ -477,8 +506,19 @@ internal static class Sms {
         panel.Children.Add(Muted("Αποστολέας: "+s.Sender+" · μέσω "+provider.Name));
         panel.Children.Add(Caption(String.IsNullOrEmpty(name)?"Προς (κινητό)":"Προς: "+name));
         var to=new TextBox{Text=number??""};panel.Children.Add(to);
+        var ready=SmsTemplates.Load();
+        var text=new TextBox{AcceptsReturn=true,TextWrapping=TextWrapping.Wrap,MinHeight=110,MaxHeight=220,VerticalScrollBarVisibility=ScrollBarVisibility.Auto};
+        if(ready.Count>0){
+            panel.Children.Add(Caption("Έτοιμο μήνυμα"));
+            var pick=new ComboBox();pick.Items.Add("Χωρίς (γράφω δικό μου)");
+            foreach(string t in ready){string shown=SmsTemplates.Fill(t,name);pick.Items.Add(shown.Length>70?shown.Substring(0,70)+"…":shown);}
+            System.Windows.Automation.AutomationProperties.SetName(pick,"Έτοιμο μήνυμα");
+            pick.SelectionChanged+=(x,y)=>{if(pick.SelectedIndex>0)text.Text=SmsTemplates.Fill(ready[pick.SelectedIndex-1],name);};
+            pick.SelectedIndex=missed?1:0;
+            panel.Children.Add(pick);
+        }
         panel.Children.Add(Caption("Μήνυμα"));
-        var text=new TextBox{AcceptsReturn=true,TextWrapping=TextWrapping.Wrap,MinHeight=110,MaxHeight=220,VerticalScrollBarVisibility=ScrollBarVisibility.Auto};panel.Children.Add(text);
+        panel.Children.Add(text);
         var counter=Muted("",12);counter.Margin=new Thickness(0,4,0,0);counter.TextAlignment=TextAlignment.Right;panel.Children.Add(counter);
         var result=Surface.Label("",13);result.Margin=new Thickness(0,8,0,0);panel.Children.Add(result);
         var w=Host.Popup("Αποστολή SMS",panel,owner);
